@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏆 Tournoi des Vidéos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3d;
+    --gold: #f5c842;
+    --gold2: #e8a020;
+    --accent: #ff4d6d;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --green: #2ecc71;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ─── LAYOUT ─── */
+  #app { position: relative; z-index: 1; }
+
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(245,200,66,0.3);
+  }
+  .header-user {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.85rem; color: var(--muted);
+  }
+  .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--gold);
+  }
+  .btn-logout {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); padding: 6px 14px;
+    border-radius: 8px; cursor: pointer; font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--gold); color: #0a0a0f;
+  }
+  .btn-primary:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245,200,66,0.3); }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-danger {
+    background: rgba(255,77,109,0.1); color: var(--accent);
+    border: 1px solid rgba(255,77,109,0.3);
+  }
+  .btn-danger:hover { background: rgba(255,77,109,0.2); }
+  .btn-sm { padding: 7px 14px; font-size: 0.82rem; border-radius: 8px; }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* ─── PAGE LOGIN ─── */
+  #page-login {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.08) 0%, transparent 60%);
+  }
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 100%; max-width: 460px;
+    text-align: center;
+  }
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem; color: var(--gold);
+    letter-spacing: 3px;
+    text-shadow: 0 0 30px rgba(245,200,66,0.3);
+  }
+  .login-subtitle { color: var(--muted); margin: 8px 0 36px; font-size: 0.9rem; }
+  .login-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .participant-btn {
+    padding: 14px; border-radius: var(--radius);
+    background: var(--surface2); border: 2px solid var(--border);
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+  }
+  .participant-btn:hover {
+    border-color: var(--gold); color: var(--gold);
+    background: rgba(245,200,66,0.05);
+    transform: translateY(-2px);
+  }
+  .participant-btn.selected {
+    border-color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    color: var(--gold);
+  }
+  .participant-btn.online-indicator::after {
+    content: ' 🟢';
+    font-size: 0.7rem;
+  }
+  .login-empty { color: var(--muted); padding: 20px; font-style: italic; font-size: 0.9rem; }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  /* ─── BRACKET PAGE ─── */
+  #page-bracket { padding: 0; }
+  .bracket-header {
+    padding: 32px 32px 0;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .round-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem; color: var(--text);
+    letter-spacing: 2px;
+  }
+  .round-title span { color: var(--gold); }
+  .round-info { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+  .bracket-controls { display: flex; gap: 10px; align-items: center; }
+
+  .progress-bar-wrap {
+    margin: 24px 32px 0;
+    background: var(--surface2);
+    border-radius: 100px; height: 6px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--gold2), var(--gold));
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    margin: 8px 32px 0;
+    font-size: 0.78rem; color: var(--muted);
+    display: flex; justify-content: space-between;
+  }
+
+  .duels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 24px 32px 40px;
+  }
+
+  .duel-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .duel-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(245,200,66,0.03), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .duel-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .duel-card:hover::before { opacity: 1; }
+
+  .duel-card.voted-card { border-color: rgba(46,204,113,0.4); }
+  .duel-card.voted-card .duel-num { color: var(--green); }
+
+  .duel-num {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 1px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .duel-vs {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .duel-team {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 8px; padding: 10px 12px;
+    font-size: 0.88rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: center;
+  }
+  .duel-sep {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem; color: var(--gold); flex-shrink: 0;
+  }
+  .duel-votes-mini {
+    margin-top: 12px;
+    display: flex; gap: 8px;
+  }
+  .vote-bar {
+    flex: 1; height: 4px; border-radius: 100px;
+    background: var(--surface2); overflow: hidden;
+  }
+  .vote-bar-fill {
+    height: 100%; border-radius: 100px;
+    background: var(--gold); transition: width 0.5s ease;
+  }
+  .vote-bar-fill.right { background: var(--accent); }
+
+  .duel-voted-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(46,204,113,0.15);
+    border: 1px solid rgba(46,204,113,0.3);
+    border-radius: 20px; padding: 2px 8px;
+    font-size: 0.7rem; color: var(--green);
+  }
+
+  /* ─── DUEL PAGE ─── */
+  #page-duel { padding: 0; }
+  .duel-header {
+    padding: 24px 32px;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .duel-title-h {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem; color: var(--text); letter-spacing: 1px;
+  }
+  .duel-title-h span { color: var(--gold); }
+
+  .videos-area {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    gap: 0; align-items: stretch;
+    min-height: 60vh;
+  }
+  .video-side {
+    display: flex; flex-direction: column;
+    padding: 24px;
+  }
+  .video-name {
+    font-weight: 600; font-size: 1rem; margin-bottom: 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .video-frame {
+    flex: 1;
+    background: #000;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 16/9;
+  }
+  .video-frame iframe {
+    width: 100%; height: 100%; border: none;
+  }
+  .video-votes {
+    margin-top: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .video-votes-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem; line-height: 1;
+  }
+  .video-votes-label { font-size: 0.8rem; color: var(--muted); }
+  .video-voters { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+  .vs-divider {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px 8px;
+    gap: 12px;
+  }
+  .vs-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem; color: var(--gold);
+    text-shadow: 0 0 20px rgba(245,200,66,0.4);
+    writing-mode: vertical-rl;
+    letter-spacing: 4px;
+  }
+  .vs-line { width: 1px; flex: 1; background: var(--border); }
+
+  .vote-area {
+    padding: 24px 32px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    background: var(--surface);
+  }
+  .vote-area h3 { font-size: 0.9rem; color: var(--muted); font-weight: 400; }
+  .vote-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .vote-btn {
+    padding: 14px 32px;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 1rem;
+    cursor: pointer; border: 2px solid transparent;
+    transition: all 0.2s; white-space: nowrap; max-width: 280px;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .vote-btn-A {
+    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.4);
+    color: var(--gold);
+  }
+  .vote-btn-A:hover { background: rgba(245,200,66,0.2); border-color: var(--gold); }
+  .vote-btn-B {
+    background: rgba(255,77,109,0.1); border-color: rgba(255,77,109,0.4);
+    color: var(--accent);
+  }
+  .vote-btn-B:hover { background: rgba(255,77,109,0.2); border-color: var(--accent); }
+  .vote-btn.active-vote { transform: scale(1.03); }
+  .vote-btn-A.active-vote { background: rgba(245,200,66,0.25); border-color: var(--gold); }
+  .vote-btn-B.active-vote { background: rgba(255,77,109,0.25); border-color: var(--accent); }
+  .voted-msg {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3);
+    border-radius: var(--radius); padding: 12px 20px;
+    color: var(--green); font-size: 0.9rem;
+  }
+  .global-bar {
+    width: 100%; max-width: 500px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .global-bar-track {
+    flex: 1; height: 8px; border-radius: 100px;
+    background: var(--surface2); overflow: hidden;
+    display: flex;
+  }
+  .global-bar-a { height: 100%; background: var(--gold); transition: width 0.5s ease; }
+  .global-bar-b { height: 100%; background: var(--accent); transition: width 0.5s ease; }
+  .bar-pct { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; }
+  .bar-pct-a { color: var(--gold); }
+  .bar-pct-b { color: var(--accent); }
+
+  /* ─── ADMIN PAGE ─── */
+  #page-admin { padding: 32px; }
+  .admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .admin-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem; color: var(--gold); letter-spacing: 2px;
+  }
+  .admin-tabs {
+    display: flex; gap: 4px;
+    background: var(--surface2); border-radius: 10px; padding: 4px;
+    margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .tab-btn {
+    padding: 8px 18px; border-radius: 8px; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; color: var(--muted); background: none;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--surface); color: var(--text); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem; letter-spacing: 1px; margin-bottom: 16px; color: var(--text);
+  }
+
+  .input-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .input-field {
+    flex: 1; min-width: 200px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 14px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    outline: none; transition: border-color 0.2s;
+  }
+  .input-field:focus { border-color: var(--gold); }
+  .input-field::placeholder { color: var(--muted); }
+
+  .list-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 8px;
+    gap: 12px;
+  }
+  .list-item-name { font-weight: 600; font-size: 0.9rem; }
+  .list-item-meta { font-size: 0.78rem; color: var(--muted); }
+  .list-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .notice {
+    background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.2);
+    border-radius: var(--radius); padding: 14px 18px;
+    font-size: 0.85rem; color: var(--gold); margin-bottom: 20px;
+  }
+  .notice-red {
+    background: rgba(255,77,109,0.08); border-color: rgba(255,77,109,0.2);
+    color: var(--accent);
+  }
+
+  /* Duels admin grid */
+  .duels-admin-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 12px;
+  }
+  .duel-admin-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+  }
+  .duel-admin-num { font-size: 0.72rem; color: var(--muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+  .duel-admin-selects { display: flex; align-items: center; gap: 8px; }
+  .duel-admin-selects select {
+    flex: 1;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    cursor: pointer; outline: none;
+  }
+  .duel-admin-selects select:focus { border-color: var(--gold); }
+
+  /* Round control */
+  .round-control-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; margin-bottom: 20px;
+  }
+  .round-stat { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .round-stat:last-child { border: none; }
+  .round-stat-label { color: var(--muted); font-size: 0.85rem; }
+  .round-stat-value { font-weight: 600; }
+
+  /* Votes table */
+  .votes-table { width: 100%; border-collapse: collapse; }
+  .votes-table th, .votes-table td {
+    padding: 10px 14px; text-align: left; font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .votes-table th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .votes-table tr:hover td { background: var(--surface2); }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 20px;
+    font-size: 0.88rem; z-index: 9999;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s; max-width: 300px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.toast-success { border-color: rgba(46,204,113,0.4); color: var(--green); }
+  #toast.toast-error { border-color: rgba(255,77,109,0.4); color: var(--accent); }
+
+  /* Setup screen (firebase config) */
+  #page-setup {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.06) 0%, transparent 60%);
+  }
+  .setup-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 48px 40px;
+    width: 100%; max-width: 560px;
+  }
+  .setup-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem; color: var(--gold); letter-spacing: 2px; margin-bottom: 8px;
+  }
+  .setup-steps { counter-reset: step; }
+  .setup-step {
+    counter-increment: step;
+    display: flex; gap: 14px; margin-bottom: 20px; align-items: flex-start;
+  }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--gold);
+    flex-shrink: 0;
+  }
+  .step-text { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+  .step-text a { color: var(--gold); }
+  .step-text code {
+    background: var(--surface2); padding: 2px 6px; border-radius: 4px;
+    font-size: 0.82rem; color: var(--text);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    header { padding: 12px 16px; }
+    .bracket-header, #page-admin { padding: 16px; }
+    .duels-grid { padding: 16px; grid-template-columns: 1fr; }
+    .videos-area { grid-template-columns: 1fr; }
+    .vs-divider { flex-direction: row; padding: 8px 16px; }
+    .vs-text { writing-mode: horizontal-tb; font-size: 1.8rem; }
+    .vs-line { width: auto; height: 1px; flex: 1; }
+    .video-side { padding: 16px; }
+    .vote-area { padding: 16px; }
+    .login-box { padding: 28px 20px; }
+    .login-grid { grid-template-columns: 1fr; }
+    .duel-header { padding: 16px; }
+  }
+
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state {
+    text-align: center; padding: 48px 20px;
+    color: var(--muted); font-size: 0.9rem;
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+  select option { background: #1c1c28; }
+</style>
+</head>
+<body>
+
+<!-- FIREBASE SETUP PAGE -->
+<div id="page-setup" class="page active">
+  <div class="setup-box">
+    <div class="setup-title">⚡ Configuration Firebase</div>
+    <p style="color:var(--muted);font-size:0.88rem;margin-bottom:24px;">Avant de commencer, configure Firebase pour activer le live sync des votes.</p>
+
+    <div class="setup-steps">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Va sur <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → Créer un projet → Nom de ton choix, désactive Google Analytics si tu veux.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Dans le projet : clique <strong>⚙️ Paramètres du projet</strong> → onglet <strong>Général</strong> → Fais défiler jusqu'à <strong>"Vos applications"</strong> → clique <strong>&lt;/&gt; Web</strong> → Enregistre l'app.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Copie la config qui apparaît (<code>apiKey</code>, <code>authDomain</code>, etc.) et colle-la ci-dessous.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <div class="step-text">Dans Firebase : <strong>Build → Realtime Database</strong> → Créer une base → Mode test → Ensuite <strong>Authentification → Sign-in method → Anonyme → Activer</strong>.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:6px;">Colle ta config Firebase (objet JS) :</label>
+      <textarea id="firebase-config-input" class="input-field" rows="8" placeholder='{
+  "apiKey": "AIza...",
+  "authDomain": "mon-projet.firebaseapp.com",
+  "databaseURL": "https://mon-projet-default-rtdb.firebaseio.com",
+  "projectId": "mon-projet",
+  "storageBucket": "mon-projet.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123..."
+}' style="width:100%;font-family:monospace;font-size:0.82rem;resize:vertical;min-height:160px;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="initFirebase()">🚀 Connecter Firebase</button>
+      <button class="btn btn-secondary" onclick="useDemoMode()">🧪 Mode démo (sans Firebase)</button>
+    </div>
+    <p style="font-size:0.78rem;color:var(--muted);margin-top:12px;">Le mode démo stocke tout en local — pas de sync entre appareils, mais utile pour tester.</p>
+  </div>
+</div>
+
+<!-- MAIN APP (shown after Firebase init) -->
+<div id="main-app" style="display:none;">
+
+  <!-- HEADER -->
+  <header id="main-header" style="display:none;">
+    <div class="logo">🏆 VidéoTournoi</div>
+    <div class="header-user">
+      <span id="header-username" class="badge"></span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+      <button class="btn btn-secondary btn-sm" id="admin-btn" style="display:none;" onclick="showPage('admin')">⚙️ Admin</button>
+    </div>
+  </header>
+
+  <!-- LOGIN PAGE -->
+  <div id="page-login" class="page">
+    <div class="login-box">
+      <div class="login-title">🎬 VidéoTournoi</div>
+      <p class="login-subtitle">Choisis ton nom pour voter sur les meilleures vidéos</p>
+      <div id="participant-grid" class="login-grid"></div>
+      <button class="btn btn-primary btn-full" id="login-confirm-btn" style="display:none;" onclick="confirmLogin()">Entrer dans le tournoi →</button>
+      <div id="login-empty" style="display:none;text-align:center;">
+        <p class="login-empty">Aucun participant configuré.</p>
+        <div style="margin-top:16px;padding:16px;background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.2);border-radius:12px;">
+          <p style="font-size:0.85rem;color:var(--gold);margin-bottom:12px;">👑 Premier lancement — accède à l'admin pour tout configurer</p>
+          <button class="btn btn-primary btn-full" onclick="firstLaunchAdmin()">⚙️ Accéder au panneau admin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRACKET PAGE -->
+  <div id="page-bracket" class="page">
+    <div class="bracket-header">
+      <div>
+        <div class="round-title">Round <span id="round-num-display">1</span> <span style="color:var(--muted);font-size:1.4rem;" id="round-name-display"></span></div>
+        <div class="round-info" id="round-info-display"></div>
+      </div>
+      <div class="bracket-controls">
+        <button class="btn btn-secondary btn-sm" onclick="showPage('bracket')">🔄 Actualiser</button>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-label">
+      <span id="progress-text">0 duels votés</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="duels-grid" id="duels-grid"></div>
+  </div>
+
+  <!-- DUEL PAGE -->
+  <div id="page-duel" class="page">
+    <div class="duel-header">
+      <button class="btn btn-secondary btn-sm" onclick="showPage('bracket')">← Retour</button>
+      <div class="duel-title-h">Duel <span id="duel-num-display" style="color:var(--gold)"></span></div>
+    </div>
+    <div class="videos-area">
+      <div class="video-side">
+        <div class="video-name" id="vid-name-a"></div>
+        <div class="video-frame">
+          <iframe id="iframe-a" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
+        <div class="video-votes">
+          <div>
+            <div class="video-votes-count" id="votes-count-a" style="color:var(--gold)">0</div>
+            <div class="video-votes-label">votes</div>
+          </div>
+        </div>
+        <div class="video-voters" id="voters-a"></div>
+      </div>
+      <div class="vs-divider">
+        <div class="vs-line"></div>
+        <div class="vs-text">VS</div>
+        <div class="vs-line"></div>
+      </div>
+      <div class="video-side">
+        <div class="video-name" id="vid-name-b"></div>
+        <div class="video-frame">
+          <iframe id="iframe-b" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
+        <div class="video-votes">
+          <div>
+            <div class="video-votes-count" id="votes-count-b" style="color:var(--accent)">0</div>
+            <div class="video-votes-label">votes</div>
+          </div>
+        </div>
+        <div class="video-voters" id="voters-b"></div>
+      </div>
+    </div>
+    <div class="vote-area">
+      <div id="vote-buttons-area">
+        <h3>🗳️ Vote pour ta vidéo préférée</h3>
+        <div class="vote-buttons" style="margin-top:12px;">
+          <button class="vote-btn vote-btn-A" id="vbtn-a" onclick="castVote('A')"></button>
+          <button class="vote-btn vote-btn-B" id="vbtn-b" onclick="castVote('B')"></button>
+        </div>
+      </div>
+      <div id="already-voted-msg" class="voted-msg" style="display:none;">
+        ✅ Tu as voté pour <strong id="voted-for-name"></strong> — tu peux changer jusqu'à la fin du round.
+        <button class="btn btn-sm btn-secondary" style="margin-left:8px;" onclick="showVoteChange()">Changer</button>
+      </div>
+      <div class="global-bar">
+        <span class="bar-pct bar-pct-a" id="pct-a">0%</span>
+        <div class="global-bar-track">
+          <div class="global-bar-a" id="bar-a" style="width:50%"></div>
+          <div class="global-bar-b" id="bar-b" style="width:50%"></div>
+        </div>
+        <span class="bar-pct bar-pct-b" id="pct-b">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN PAGE -->
+  <div id="page-admin" class="page">
+    <div class="admin-header">
+      <div class="admin-title">⚙️ Panneau Admin</div>
+      <button class="btn btn-secondary" onclick="showPage('bracket')">← Retour au tournoi</button>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="switchTab('participants')">👥 Participants</button>
+      <button class="tab-btn" onclick="switchTab('videos')">🎬 Vidéos</button>
+      <button class="tab-btn" onclick="switchTab('duels')">⚔️ Duels</button>
+      <button class="tab-btn" onclick="switchTab('round')">🏆 Round</button>
+      <button class="tab-btn" onclick="switchTab('votes')">📊 Votes</button>
+    </div>
+
+    <!-- TAB: PARTICIPANTS -->
+    <div id="tab-participants" class="tab-content active">
+      <div class="notice">💡 Les participants sont les personnes qui pourront se connecter et voter. Un participant peut être désigné admin.</div>
+      <div class="input-row">
+        <input type="text" id="new-participant-name" class="input-field" placeholder="Nom du participant (ex: Théo)">
+        <label style="display:flex;align-items:center;gap:6px;color:var(--muted);font-size:0.85rem;white-space:nowrap;">
+          <input type="checkbox" id="new-participant-admin"> Admin
+        </label>
+        <button class="btn btn-primary btn-sm" onclick="addParticipant()">+ Ajouter</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillTestParticipants()">🧪 Test</button>
+      </div>
+      <div id="participants-list"></div>
+    </div>
+
+    <!-- TAB: VIDEOS -->
+    <div id="tab-videos" class="tab-content">
+      <div class="notice">💡 Colle les liens YouTube complets (ex: https://www.youtube.com/watch?v=...). Donne un nom court à chaque vidéo.</div>
+      <div class="input-row">
+        <input type="text" id="new-video-name" class="input-field" placeholder="Nom de la vidéo (ex: Soirée crêpes 2022)">
+        <input type="text" id="new-video-url" class="input-field" placeholder="URL YouTube">
+        <button class="btn btn-primary btn-sm" onclick="addVideo()">+ Ajouter</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillTestVideos()">🧪 Test (8 vidéos)</button>
+      </div>
+      <div style="margin-bottom:8px;color:var(--muted);font-size:0.82rem;" id="video-count-label"></div>
+      <div id="videos-list"></div>
+    </div>
+
+    <!-- TAB: DUELS -->
+    <div id="tab-duels" class="tab-content">
+      <div class="notice">💡 Configure les 32 duels du premier round (ou moins si vous avez moins de vidéos). Assigne une vidéo A et une vidéo B à chaque duel.</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="autoAssignDuels()">⚡ Assignation auto</button>
+        <button class="btn btn-secondary btn-sm" onclick="addDuelSlot()">+ Ajouter un duel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveDuels()">💾 Sauvegarder les duels</button>
+      </div>
+      <div id="duels-admin-grid" class="duels-admin-grid"></div>
+    </div>
+
+    <!-- TAB: ROUND -->
+    <div id="tab-round" class="tab-content">
+      <div class="round-control-box" id="round-stats-box"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="adminNextRound()">⏩ Avancer au round suivant</button>
+        <button class="btn btn-danger" onclick="adminResetRound()">🔄 Réinitialiser le round actuel</button>
+        <button class="btn btn-danger" onclick="adminResetAll()">⚠️ RESET TOTAL</button>
+      </div>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:12px;">Avancer le round calcule automatiquement les gagnants des duels et construit le round suivant.</p>
+    </div>
+
+    <!-- TAB: VOTES -->
+    <div id="tab-votes" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <div class="section-title" style="margin:0;">Tous les votes du round actuel</div>
+        <button class="btn btn-secondary btn-sm" onclick="loadVotesTab()">🔄 Actualiser</button>
+      </div>
+      <div id="votes-table-wrap"></div>
+    </div>
+  </div>
+
+</div><!-- /main-app -->
+
+<div id="toast"></div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// ─── GLOBALS ───
+let db = null, auth = null;
+let currentUser = null; // { name, isAdmin }
+let currentRound = 1;
+let currentDuelId = null;
+let duelUnsubscribe = null;
+let demoMode = false;
+let demoData = { participants: {}, videos: {}, duels: {}, votes: {}, round: 1 };
+
+window._firebase = { ref, set, get, onValue, update, remove };
+
+// ─── FIREBASE INIT ───
+window.initFirebase = async function() {
+  const raw = document.getElementById('firebase-config-input').value.trim();
+  if (!raw) return showToast('Colle ta config Firebase d\'abord', 'error');
+  let config;
+  try {
+    config = JSON.parse(raw);
+  } catch(e) {
+    showToast('JSON invalide — vérifie la syntaxe', 'error'); return;
+  }
+  if (!config.databaseURL) return showToast('Il manque databaseURL dans la config', 'error');
+  try {
+    const app = initializeApp(config);
+    db = getDatabase(app);
+    auth = getAuth(app);
+    await signInAnonymously(auth);
+    localStorage.setItem('fb_config', JSON.stringify(config));
+    startApp();
+  } catch(e) {
+    showToast('Erreur Firebase: ' + e.message, 'error');
+  }
+};
+
+window.useDemoMode = function() {
+  demoMode = true;
+  const saved = localStorage.getItem('demo_data');
+  if (saved) demoData = JSON.parse(saved);
+  startApp();
+};
+
+// Try auto-reconnect
+(async function() {
+  const saved = localStorage.getItem('fb_config');
+  if (saved) {
+    try {
+      const config = JSON.parse(saved);
+      const app = initializeApp(config);
+      db = getDatabase(app);
+      auth = getAuth(app);
+      await signInAnonymously(auth);
+      startApp();
+    } catch(e) { /* show setup page */ }
+  }
+})();
+
+// ─── DATA LAYER ───
+// Abstraction: works with Firebase or demoMode
+async function dbRead(path) {
+  if (demoMode) {
+    return path.split('/').reduce((o, k) => (o && o[k] !== undefined ? o[k] : null), demoData);
+  }
+  const snap = await get(ref(db, path));
+  return snap.exists() ? snap.val() : null;
+}
+async function dbWrite(path, value) {
+  if (demoMode) {
+    const keys = path.split('/');
+    let obj = demoData;
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!obj[keys[i]]) obj[keys[i]] = {};
+      obj = obj[keys[i]];
+    }
+    obj[keys[keys.length-1]] = value;
+    localStorage.setItem('demo_data', JSON.stringify(demoData));
+    return;
+  }
+  await set(ref(db, path), value);
+}
+async function dbRemove(path) {
+  if (demoMode) {
+    const keys = path.split('/');
+    let obj = demoData;
+    for (let i = 0; i < keys.length - 1; i++) { if (!obj[keys[i]]) return; obj = obj[keys[i]]; }
+    delete obj[keys[keys.length-1]];
+    localStorage.setItem('demo_data', JSON.stringify(demoData));
+    return;
+  }
+  await remove(ref(db, path));
+}
+function dbListen(path, cb) {
+  if (demoMode) {
+    // In demo mode, just call once
+    dbRead(path).then(cb);
+    return () => {};
+  }
+  const unsub = onValue(ref(db, path), snap => cb(snap.exists() ? snap.val() : null));
+  return unsub;
+}
+
+// ─── APP START ───
+function startApp() {
+  document.getElementById('page-setup').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  const savedUser = sessionStorage.getItem('current_user');
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    showLoggedIn();
+  } else {
+    showPage('login');
+  }
+}
+
+// ─── PAGES ───
+window.showPage = function(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const p = document.getElementById('page-' + name);
+  if (p) p.classList.add('active');
+  if (name === 'bracket') loadBracket();
+  if (name === 'admin') loadAdmin();
+  if (name === 'login') loadLoginPage();
+  window.scrollTo(0, 0);
+};
+
+// ─── LOGIN ───
+async function loadLoginPage() {
+  document.getElementById('main-header').style.display = 'none';
+  const participants = await dbRead('participants') || {};
+  const grid = document.getElementById('participant-grid');
+  const empty = document.getElementById('login-empty');
+  const confirmBtn = document.getElementById('login-confirm-btn');
+  const keys = Object.keys(participants);
+  grid.innerHTML = '';
+  if (!keys.length) { empty.style.display = 'block'; confirmBtn.style.display = 'none'; return; }
+  empty.style.display = 'none';
+  keys.forEach(k => {
+    const p = participants[k];
+    const btn = document.createElement('button');
+    btn.className = 'participant-btn';
+    btn.textContent = p.name + (p.isAdmin ? ' 👑' : '');
+    btn.dataset.key = k;
+    btn.onclick = () => {
+      document.querySelectorAll('.participant-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      confirmBtn.style.display = 'block';
+      confirmBtn.dataset.key = k;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+window.confirmLogin = async function() {
+  const btn = document.getElementById('login-confirm-btn');
+  const key = btn.dataset.key;
+  const participants = await dbRead('participants') || {};
+  const p = participants[key];
+  if (!p) return;
+  currentUser = { key, name: p.name, isAdmin: !!p.isAdmin };
+  sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+  showLoggedIn();
+};
+
+function showLoggedIn() {
+  document.getElementById('main-header').style.display = 'flex';
+  document.getElementById('header-username').textContent = currentUser.name + (currentUser.isAdmin ? ' 👑' : '');
+  const adminBtn = document.getElementById('admin-btn');
+  if (currentUser.isAdmin) adminBtn.style.display = 'inline-flex'; else adminBtn.style.display = 'none';
+  showPage('bracket');
+}
+
+window.logout = function() {
+  sessionStorage.removeItem('current_user');
+  currentUser = null;
+  showPage('login');
+  loadLoginPage();
+};
+
+window.firstLaunchAdmin = function() {
+  currentUser = { key: 'first_launch', name: 'Admin (setup)', isAdmin: true };
+  sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+  document.getElementById('main-header').style.display = 'flex';
+  document.getElementById('header-username').textContent = '👑 Admin (setup)';
+  document.getElementById('admin-btn').style.display = 'inline-flex';
+  showPage('admin');
+};
+
+// ─── BRACKET ───
+async function loadBracket() {
+  currentRound = (await dbRead('round')) || 1;
+  const roundNames = ['','64ème de finale','32ème de finale','16ème de finale','Quarts de finale','Demi-finales','Finale','Champion 🏆'];
+  document.getElementById('round-num-display').textContent = currentRound;
+  document.getElementById('round-name-display').textContent = roundNames[currentRound] ? `— ${roundNames[currentRound]}` : '';
+
+  const duels = await dbRead(`duels/round${currentRound}`) || {};
+  const votes = await dbRead(`votes/round${currentRound}`) || {};
+  const participants = await dbRead('participants') || {};
+  const totalPart = Object.keys(participants).length;
+
+  const duelKeys = Object.keys(duels);
+  if (!duelKeys.length) {
+    document.getElementById('duels-grid').innerHTML = '<div class="empty-state"><div class="empty-icon">⚔️</div><p>Aucun duel configuré pour ce round.<br>Un admin doit configurer les duels dans le panneau admin.</p></div>';
+    document.getElementById('round-info-display').textContent = '';
+    return;
+  }
+
+  // Progress
+  let votedDuels = 0;
+  duelKeys.forEach(dk => {
+    const duelVotes = votes[dk] || {};
+    const userVoted = currentUser ? !!duelVotes[currentUser.key] : false;
+    if (userVoted) votedDuels++;
+  });
+  const pct = Math.round((votedDuels / duelKeys.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${votedDuels} / ${duelKeys.length} duels votés par toi`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('round-info-display').textContent = `${duelKeys.length} duels • ${totalPart} participants`;
+
+  const grid = document.getElementById('duels-grid');
+  grid.innerHTML = '';
+
+  // Load videos
+  const videos = await dbRead('videos') || {};
+
+  duelKeys.sort().forEach(dk => {
+    const duel = duels[dk];
+    const duelVotes = votes[dk] || {};
+    const myVote = currentUser ? duelVotes[currentUser.key] : null;
+
+    let votesA = 0, votesB = 0;
+    Object.values(duelVotes).forEach(v => { if (v === 'A') votesA++; else if (v === 'B') votesB++; });
+    const total = votesA + votesB || 1;
+
+    const vidA = videos[duel.vidA] || { name: duel.vidA };
+    const vidB = videos[duel.vidB] || { name: duel.vidB };
+
+    const card = document.createElement('div');
+    card.className = 'duel-card' + (myVote ? ' voted-card' : '');
+    card.innerHTML = `
+      ${myVote ? '<div class="duel-voted-badge">✓ Voté</div>' : ''}
+      <div class="duel-num">Duel ${dk.replace('duel','')}</div>
+      <div class="duel-vs">
+        <div class="duel-team">${vidA.name}</div>
+        <div class="duel-sep">VS</div>
+        <div class="duel-team">${vidB.name}</div>
+      </div>
+      <div class="duel-votes-mini">
+        <div class="vote-bar"><div class="vote-bar-fill" style="width:${Math.round(votesA/total*100)}%"></div></div>
+        <div style="font-size:0.72rem;color:var(--muted);flex-shrink:0;">${votesA}v - ${votesB}v</div>
+        <div class="vote-bar"><div class="vote-bar-fill right" style="width:${Math.round(votesB/total*100)}%"></div></div>
+      </div>
+    `;
+    card.onclick = () => openDuel(dk);
+    grid.appendChild(card);
+  });
+}
+
+// ─── DUEL ───
+async function openDuel(duelId) {
+  currentDuelId = duelId;
+  if (duelUnsubscribe) duelUnsubscribe();
+
+  const round = (await dbRead('round')) || 1;
+  const duel = await dbRead(`duels/round${round}/${duelId}`);
+  if (!duel) return;
+  const videos = await dbRead('videos') || {};
+  const vidA = videos[duel.vidA] || { name: duel.vidA, url: '' };
+  const vidB = videos[duel.vidB] || { name: duel.vidB, url: '' };
+
+  document.getElementById('duel-num-display').textContent = duelId.replace('duel', '');
+  document.getElementById('vid-name-a').textContent = vidA.name;
+  document.getElementById('vid-name-b').textContent = vidB.name;
+  document.getElementById('vbtn-a').textContent = '👍 ' + vidA.name;
+  document.getElementById('vbtn-b').textContent = '👍 ' + vidB.name;
+
+  document.getElementById('iframe-a').src = getYouTubeEmbedUrl(vidA.url);
+  document.getElementById('iframe-b').src = getYouTubeEmbedUrl(vidB.url);
+
+  showPage('duel');
+
+  // Live votes
+  duelUnsubscribe = dbListen(`votes/round${round}/${duelId}`, (duelVotes) => {
+    duelVotes = duelVotes || {};
+    const participants = {}; // we'll rely on voter keys
+    let votesA = 0, votesB = 0;
+    let votersA = [], votersB = [];
+    Object.entries(duelVotes).forEach(([ukey, v]) => {
+      if (v === 'A') { votesA++; votersA.push(ukey); }
+      else if (v === 'B') { votesB++; votersB.push(ukey); }
+    });
+    const total = votesA + votesB || 1;
+    document.getElementById('votes-count-a').textContent = votesA;
+    document.getElementById('votes-count-b').textContent = votesB;
+    document.getElementById('voters-a').textContent = votersA.length ? 'Votes de : ' + votersA.join(', ') : '';
+    document.getElementById('voters-b').textContent = votersB.length ? 'Votes de : ' + votersB.join(', ') : '';
+
+    const pA = Math.round(votesA/total*100), pB = Math.round(votesB/total*100);
+    document.getElementById('bar-a').style.width = pA + '%';
+    document.getElementById('bar-b').style.width = pB + '%';
+    document.getElementById('pct-a').textContent = pA + '%';
+    document.getElementById('pct-b').textContent = pB + '%';
+
+    // My vote
+    const myVote = currentUser ? duelVotes[currentUser.key] : null;
+    const vbArea = document.getElementById('vote-buttons-area');
+    const alreadyMsg = document.getElementById('already-voted-msg');
+    document.getElementById('vbtn-a').classList.remove('active-vote');
+    document.getElementById('vbtn-b').classList.remove('active-vote');
+    if (myVote) {
+      vbArea.style.display = 'none';
+      alreadyMsg.style.display = 'flex';
+      document.getElementById('voted-for-name').textContent = myVote === 'A' ? vidA.name : vidB.name;
+    } else {
+      vbArea.style.display = 'block';
+      alreadyMsg.style.display = 'none';
+    }
+  });
+}
+
+window.castVote = async function(side) {
+  if (!currentUser) return showToast('Connecte-toi d\'abord', 'error');
+  const round = (await dbRead('round')) || 1;
+  await dbWrite(`votes/round${round}/${currentDuelId}/${currentUser.key}`, side);
+
+  // In demo mode, re-trigger listener
+  if (demoMode) {
+    const duel = await dbRead(`duels/round${round}/${currentDuelId}`);
+    const videos = await dbRead('videos') || {};
+    const vidA = videos[duel.vidA] || { name: duel.vidA };
+    const vidB = videos[duel.vidB] || { name: duel.vidB };
+    const duelVotes = await dbRead(`votes/round${round}/${currentDuelId}`) || {};
+    // manually update UI
+    let vA=0,vB=0,votersA=[],votersB=[];
+    Object.entries(duelVotes).forEach(([k,v])=>{ if(v==='A'){vA++;votersA.push(k);}else if(v==='B'){vB++;votersB.push(k);}});
+    const tot=vA+vB||1;
+    document.getElementById('votes-count-a').textContent=vA;
+    document.getElementById('votes-count-b').textContent=vB;
+    document.getElementById('voters-a').textContent=votersA.length?'Votes de : '+votersA.join(', '):'';
+    document.getElementById('voters-b').textContent=votersB.length?'Votes de : '+votersB.join(', '):'';
+    const pA=Math.round(vA/tot*100),pB=Math.round(vB/tot*100);
+    document.getElementById('bar-a').style.width=pA+'%';
+    document.getElementById('bar-b').style.width=pB+'%';
+    document.getElementById('pct-a').textContent=pA+'%';
+    document.getElementById('pct-b').textContent=pB+'%';
+    document.getElementById('vote-buttons-area').style.display='none';
+    document.getElementById('already-voted-msg').style.display='flex';
+    document.getElementById('voted-for-name').textContent=side==='A'?vidA.name:vidB.name;
+  }
+  showToast('Vote enregistré ! ✅', 'success');
+};
+
+window.showVoteChange = function() {
+  document.getElementById('vote-buttons-area').style.display = 'block';
+  document.getElementById('already-voted-msg').style.display = 'none';
+};
+
+function getYouTubeEmbedUrl(url) {
+  if (!url) return '';
+  let id = '';
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
+    else id = u.searchParams.get('v') || '';
+  } catch(e) { id = url; }
+  return id ? `https://www.youtube.com/embed/${id}` : '';
+}
+
+// ─── ADMIN ───
+window.loadAdmin = async function() {
+  renderParticipantsList();
+  renderVideosList();
+  renderDuelsAdmin();
+  renderRoundStats();
+};
+
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'votes') loadVotesTab();
+  if (tab === 'round') renderRoundStats();
+};
+
+// PARTICIPANTS
+async function renderParticipantsList() {
+  const participants = await dbRead('participants') || {};
+  const list = document.getElementById('participants-list');
+  const keys = Object.keys(participants);
+  if (!keys.length) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>Aucun participant</p></div>'; return; }
+  list.innerHTML = keys.map(k => {
+    const p = participants[k];
+    return `<div class="list-item">
+      <div>
+        <div class="list-item-name">${p.name} ${p.isAdmin ? '👑 Admin' : ''}</div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="toggleAdmin('${k}', ${!p.isAdmin})">${p.isAdmin ? 'Retirer admin' : 'Mettre admin'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteParticipant('${k}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.addParticipant = async function() {
+  const name = document.getElementById('new-participant-name').value.trim();
+  if (!name) return showToast('Entre un nom', 'error');
+  const isAdmin = document.getElementById('new-participant-admin').checked;
+  const key = 'p_' + Date.now();
+  await dbWrite(`participants/${key}`, { name, isAdmin });
+  document.getElementById('new-participant-name').value = '';
+  document.getElementById('new-participant-admin').checked = false;
+  renderParticipantsList();
+  showToast(name + ' ajouté !', 'success');
+};
+
+window.fillTestParticipants = async function() {
+  const names = ['Alex', 'Sam', 'Jordan', 'Théo', 'Léa', 'Morgan'];
+  for (const name of names) {
+    await dbWrite(`participants/p_${Date.now()}_${name}`, { name, isAdmin: name === 'Alex' });
+    await new Promise(r => setTimeout(r, 10));
+  }
+  renderParticipantsList();
+  showToast('6 participants test ajoutés', 'success');
+};
+
+window.toggleAdmin = async function(key, val) {
+  await dbWrite(`participants/${key}/isAdmin`, val);
+  renderParticipantsList();
+};
+
+window.deleteParticipant = async function(key) {
+  if (!confirm('Supprimer ce participant ?')) return;
+  await dbRemove(`participants/${key}`);
+  renderParticipantsList();
+};
+
+// VIDEOS
+async function renderVideosList() {
+  const videos = await dbRead('videos') || {};
+  const keys = Object.keys(videos);
+  document.getElementById('video-count-label').textContent = `${keys.length} vidéo(s) — objectif : 64`;
+  const list = document.getElementById('videos-list');
+  if (!keys.length) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">🎬</div><p>Aucune vidéo</p></div>'; return; }
+  list.innerHTML = keys.map(k => {
+    const v = videos[k];
+    return `<div class="list-item">
+      <div>
+        <div class="list-item-name">${v.name}</div>
+        <div class="list-item-meta">${v.url}</div>
+      </div>
+      <div class="list-item-actions">
+        <button class="btn btn-danger btn-sm" onclick="deleteVideo('${k}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.addVideo = async function() {
+  const name = document.getElementById('new-video-name').value.trim();
+  const url = document.getElementById('new-video-url').value.trim();
+  if (!name || !url) return showToast('Nom et URL requis', 'error');
+  const key = 'v_' + Date.now();
+  await dbWrite(`videos/${key}`, { name, url });
+  document.getElementById('new-video-name').value = '';
+  document.getElementById('new-video-url').value = '';
+  renderVideosList();
+  showToast(name + ' ajoutée !', 'success');
+};
+
+window.fillTestVideos = async function() {
+  const testVids = [
+    { name: 'Soirée crêpes 2021', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+    { name: 'Ski 2022 - Chamrousse', url: 'https://www.youtube.com/watch?v=3JZ_D3ELwOQ' },
+    { name: 'Karting anniv Théo', url: 'https://www.youtube.com/watch?v=L_jWHffIx5E' },
+    { name: 'Soirée déguisements', url: 'https://www.youtube.com/watch?v=9bZkp7q19f0' },
+    { name: 'Road trip côte atlantique', url: 'https://www.youtube.com/watch?v=kffacxfA7G4' },
+    { name: 'Match foot salle', url: 'https://www.youtube.com/watch?v=2vjPBrBU-TM' },
+    { name: 'Barbecue de fin d\'année', url: 'https://www.youtube.com/watch?v=ZZ5LpwO-An4' },
+    { name: 'Concours de bouffes', url: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ' },
+  ];
+  for (const v of testVids) {
+    await dbWrite(`videos/v_${Date.now()}_${Math.random().toString(36).slice(2,6)}`, v);
+    await new Promise(r => setTimeout(r, 15));
+  }
+  renderVideosList();
+  showToast('8 vidéos test ajoutées', 'success');
+};
+
+window.deleteVideo = async function(key) {
+  if (!confirm('Supprimer cette vidéo ?')) return;
+  await dbRemove(`videos/${key}`);
+  renderVideosList();
+};
+
+// DUELS
+async function renderDuelsAdmin() {
+  const round = (await dbRead('round')) || 1;
+  const duels = await dbRead(`duels/round${round}`) || {};
+  const videos = await dbRead('videos') || {};
+  const grid = document.getElementById('duels-admin-grid');
+  const vKeys = Object.keys(videos);
+
+  const optionsHTML = '<option value="">— Choisir —</option>' + vKeys.map(k => `<option value="${k}">${videos[k].name}</option>`).join('');
+  const duelKeys = Object.keys(duels).sort();
+
+  if (!duelKeys.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚔️</div><p>Aucun duel.<br>Clique sur "Assignation auto" ou ajoute des duels manuellement.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = duelKeys.map(dk => {
+    const d = duels[dk];
+    return `<div class="duel-admin-card">
+      <div class="duel-admin-num">Duel ${dk.replace('duel','')}</div>
+      <div class="duel-admin-selects">
+        <select data-duel="${dk}" data-side="A"><option value="">— Vidéo A —</option>${vKeys.map(k=>`<option value="${k}"${d.vidA===k?' selected':''}>${videos[k].name}</option>`).join('')}</select>
+        <span style="color:var(--gold);font-family:'Bebas Neue';font-size:1rem;flex-shrink:0;">VS</span>
+        <select data-duel="${dk}" data-side="B"><option value="">— Vidéo B —</option>${vKeys.map(k=>`<option value="${k}"${d.vidB===k?' selected':''}>${videos[k].name}</option>`).join('')}</select>
+        <button class="btn btn-danger btn-sm" onclick="deleteDuel('${dk}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.addDuelSlot = async function() {
+  const round = (await dbRead('round')) || 1;
+  const duels = await dbRead(`duels/round${round}`) || {};
+  const n = Object.keys(duels).length + 1;
+  await dbWrite(`duels/round${round}/duel${String(n).padStart(2,'0')}`, { vidA: '', vidB: '' });
+  renderDuelsAdmin();
+};
+
+window.autoAssignDuels = async function() {
+  const round = (await dbRead('round')) || 1;
+  const videos = await dbRead('videos') || {};
+  const vKeys = Object.keys(videos);
+  if (vKeys.length < 2) return showToast('Ajoute au moins 2 vidéos', 'error');
+  const shuffled = [...vKeys].sort(() => Math.random() - 0.5);
+  const newDuels = {};
+  for (let i = 0; i < Math.floor(shuffled.length / 2); i++) {
+    newDuels[`duel${String(i+1).padStart(2,'0')}`] = { vidA: shuffled[i*2], vidB: shuffled[i*2+1] };
+  }
+  await dbWrite(`duels/round${round}`, newDuels);
+  renderDuelsAdmin();
+  showToast(`${Object.keys(newDuels).length} duels créés automatiquement`, 'success');
+};
+
+window.saveDuels = async function() {
+  const round = (await dbRead('round')) || 1;
+  const selects = document.querySelectorAll('#duels-admin-grid select');
+  const updates = {};
+  selects.forEach(s => {
+    const duel = s.dataset.duel, side = s.dataset.side;
+    if (!updates[duel]) updates[duel] = {};
+    updates[duel][`vid${side}`] = s.value;
+  });
+  for (const [dk, vals] of Object.entries(updates)) {
+    await dbWrite(`duels/round${round}/${dk}`, vals);
+  }
+  showToast('Duels sauvegardés !', 'success');
+};
+
+window.deleteDuel = async function(dk) {
+  const round = (await dbRead('round')) || 1;
+  await dbRemove(`duels/round${round}/${dk}`);
+  renderDuelsAdmin();
+};
+
+// ROUND CONTROL
+async function renderRoundStats() {
+  const round = (await dbRead('round')) || 1;
+  const duels = await dbRead(`duels/round${round}`) || {};
+  const votes = await dbRead(`votes/round${round}`) || {};
+  const participants = await dbRead('participants') || {};
+  const totalPart = Object.keys(participants).length;
+  const totalDuels = Object.keys(duels).length;
+
+  // Count who has voted all duels
+  const partVotedAll = Object.keys(participants).filter(pk => {
+    return Object.keys(duels).every(dk => votes[dk] && votes[dk][pk]);
+  });
+
+  const box = document.getElementById('round-stats-box');
+  box.innerHTML = `
+    <div class="round-stat"><span class="round-stat-label">Round actuel</span><span class="round-stat-value">Round ${round}</span></div>
+    <div class="round-stat"><span class="round-stat-label">Nombre de duels</span><span class="round-stat-value">${totalDuels}</span></div>
+    <div class="round-stat"><span class="round-stat-label">Participants</span><span class="round-stat-value">${totalPart}</span></div>
+    <div class="round-stat"><span class="round-stat-label">Participants ayant tout voté</span><span class="round-stat-value" style="color:${partVotedAll.length===totalPart?'var(--green)':'var(--gold)'}">${partVotedAll.length} / ${totalPart}</span></div>
+  `;
+}
+
+window.adminNextRound = async function() {
+  if (!confirm('Passer au round suivant ? Les gagnants de chaque duel seront calculés et les duels du prochain round générés automatiquement.')) return;
+  const round = (await dbRead('round')) || 1;
+  const duels = await dbRead(`duels/round${round}`) || {};
+  const votes = await dbRead(`votes/round${round}`) || {};
+  const videos = await dbRead('videos') || {};
+
+  // Compute winners
+  const winners = [];
+  Object.entries(duels).forEach(([dk, duel]) => {
+    const duelVotes = votes[dk] || {};
+    let vA = 0, vB = 0;
+    Object.values(duelVotes).forEach(v => { if(v==='A') vA++; else if(v==='B') vB++; });
+    winners.push(vA >= vB ? duel.vidA : duel.vidB);
+  });
+
+  if (winners.length === 1) {
+    showToast('🏆 ' + (videos[winners[0]]?.name || winners[0]) + ' est le CHAMPION !', 'success');
+    return;
+  }
+
+  const nextRound = round + 1;
+  const nextDuels = {};
+  for (let i = 0; i < Math.floor(winners.length / 2); i++) {
+    nextDuels[`duel${String(i+1).padStart(2,'0')}`] = { vidA: winners[i*2], vidB: winners[i*2+1] };
+  }
+
+  await dbWrite(`duels/round${nextRound}`, nextDuels);
+  await dbWrite('round', nextRound);
+  showToast(`Round ${nextRound} lancé avec ${Object.keys(nextDuels).length} duels !`, 'success');
+  renderRoundStats();
+  renderDuelsAdmin();
+};
+
+window.adminResetRound = async function() {
+  const round = (await dbRead('round')) || 1;
+  if (!confirm(`Réinitialiser tous les votes du round ${round} ?`)) return;
+  await dbRemove(`votes/round${round}`);
+  showToast('Votes du round réinitialisés', 'success');
+};
+
+window.adminResetAll = async function() {
+  if (!confirm('⚠️ RESET TOTAL — Supprimer TOUS les votes, duels et remettre au round 1 ?')) return;
+  await dbWrite('round', 1);
+  await dbRemove('votes');
+  await dbRemove('duels');
+  showToast('Reset total effectué', 'success');
+  renderRoundStats();
+};
+
+// VOTES TABLE
+window.loadVotesTab = async function() {
+  const round = (await dbRead('round')) || 1;
+  const duels = await dbRead(`duels/round${round}`) || {};
+  const votes = await dbRead(`votes/round${round}`) || {};
+  const videos = await dbRead('videos') || {};
+  const participants = await dbRead('participants') || {};
+
+  const wrap = document.getElementById('votes-table-wrap');
+  const duelKeys = Object.keys(duels).sort();
+  if (!duelKeys.length) { wrap.innerHTML = '<div class="empty-state"><p>Aucun duel configuré</p></div>'; return; }
+
+  const partKeys = Object.keys(participants);
+  let html = `<table class="votes-table"><thead><tr><th>Duel</th>${partKeys.map(pk=>`<th>${participants[pk].name}</th>`).join('')}<th>A</th><th>B</th><th>Action</th></tr></thead><tbody>`;
+  duelKeys.forEach(dk => {
+    const d = duels[dk];
+    const dv = votes[dk] || {};
+    const vA = videos[d.vidA]?.name || d.vidA;
+    const vB = videos[d.vidB]?.name || d.vidB;
+    let countA=0,countB=0;
+    Object.values(dv).forEach(v=>{if(v==='A')countA++;else if(v==='B')countB++;});
+    html += `<tr><td><strong>Duel ${dk.replace('duel','')}</strong><br><small style="color:var(--muted)">${vA} vs ${vB}</small></td>`;
+    partKeys.forEach(pk => {
+      const v = dv[pk];
+      html += `<td style="color:${v==='A'?'var(--gold)':v==='B'?'var(--accent)':'var(--muted)'}">${v === 'A' ? vA : v === 'B' ? vB : '—'} <button style="font-size:0.7rem;background:none;border:none;cursor:pointer;color:var(--accent);" onclick="adminDeleteVote('${dk}','${pk}')" title="Supprimer ce vote">✕</button></td>`;
+    });
+    html += `<td style="color:var(--gold);font-weight:600;">${countA}</td><td style="color:var(--accent);font-weight:600;">${countB}</td>`;
+    html += `<td><button class="btn btn-danger btn-sm" onclick="adminDeleteDuelVotes('${dk}')">Reset duel</button></td>`;
+    html += `</tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+};
+
+window.adminDeleteVote = async function(duelId, participantKey) {
+  const round = (await dbRead('round')) || 1;
+  await dbRemove(`votes/round${round}/${duelId}/${participantKey}`);
+  loadVotesTab();
+  showToast('Vote supprimé', 'success');
+};
+
+window.adminDeleteDuelVotes = async function(duelId) {
+  if (!confirm('Supprimer tous les votes de ce duel ?')) return;
+  const round = (await dbRead('round')) || 1;
+  await dbRemove(`votes/round${round}/${duelId}`);
+  loadVotesTab();
+  showToast('Votes du duel supprimés', 'success');
+};
+
+// ─── TOAST ───
+window.showToast = function(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show toast-${type}`;
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => { t.className = ''; }, 3500);
+};
+
+</script>
+</body>
+</html>
