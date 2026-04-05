@@ -45,6 +45,172 @@
   .page { display: none; min-height: 100vh; }
   .page.active { display: block; }
 
+  /* ─── VICTORY SCREEN ─── */
+  #victory-screen {
+    display: none;
+    position: fixed; inset: 0; z-index: 9000;
+    background: #000;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  #victory-screen.show { display: flex; }
+
+  .victory-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(245,200,66,0.12) 0%, transparent 70%);
+  }
+  .victory-particles { position: absolute; inset: 0; pointer-events: none; }
+  .particle {
+    position: absolute; border-radius: 2px;
+    animation: particle-fall linear forwards;
+  }
+  @keyframes particle-fall {
+    0% { transform: translateY(-40px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+  .victory-content {
+    position: relative; z-index: 1;
+    text-align: center; padding: 32px; max-width: 760px; width: 100%;
+  }
+  .victory-phase { opacity: 0; transition: opacity 0.3s; }
+  .victory-phase.visible { opacity: 1; }
+
+  .v-pretitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; letter-spacing: 5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 20px;
+    animation: fadeInUp 0.6s ease forwards;
+  }
+  .v-countdown {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 20vw, 10rem);
+    color: var(--gold);
+    text-shadow: 0 0 60px rgba(245,200,66,0.5);
+    line-height: 1;
+    animation: countPulse 0.5s ease;
+  }
+  @keyframes countPulse {
+    0% { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .v-suspense-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; color: var(--muted); letter-spacing: 2px;
+    text-transform: uppercase; margin-top: 12px;
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  /* PHASE 2: fake loser announced */
+  .v-fake-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+    animation: fadeInUp 0.5s ease forwards;
+  }
+  .v-fake-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 10vw, 6rem);
+    color: var(--accent);
+    letter-spacing: 3px; line-height: 1;
+    text-shadow: 0 0 40px rgba(255,77,109,0.6);
+    animation: fadeInScale 0.7s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+  }
+  .v-fake-sub {
+    font-size: 0.9rem; color: var(--muted); margin-top: 12px;
+    animation: fadeInUp 0.5s ease 0.3s forwards; opacity: 0;
+  }
+  .v-confetti-fake {
+    font-size: 2rem; margin-top: 16px;
+    animation: fadeInUp 0.4s ease 0.5s forwards; opacity: 0;
+  }
+
+  /* PHASE 3: twist */
+  .v-twist-container {
+    animation: shakeScreen 0.5s ease;
+  }
+  @keyframes shakeScreen {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-12px); }
+    40% { transform: translateX(12px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+  }
+  .v-twist-line {
+    width: 0; height: 5px;
+    background: var(--accent);
+    margin: 16px auto;
+    animation: expandLine 0.4s ease forwards;
+  }
+  @keyframes expandLine { to { width: 100%; } }
+  .v-twist-word {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 12vw, 7rem);
+    color: var(--accent);
+    letter-spacing: 6px;
+    animation: twistIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+    text-shadow: 0 0 60px rgba(255,77,109,0.8);
+  }
+  @keyframes twistIn {
+    0% { transform: scale(2) rotate(-5deg); opacity: 0; filter: blur(10px); }
+    100% { transform: scale(1) rotate(0); opacity: 1; filter: blur(0); }
+  }
+  .v-twist-sub {
+    font-size: 0.9rem; color: var(--muted); margin-top: 8px;
+    letter-spacing: 2px; text-transform: uppercase;
+    animation: fadeInUp 0.4s ease 0.2s forwards; opacity: 0;
+  }
+
+  /* PHASE 4: real winner */
+  .v-winner-container { animation: fadeInUp 0.4s ease forwards; }
+  .v-winner-pretitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; letter-spacing: 5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px; opacity: 0.8;
+  }
+  .v-trophy { font-size: 5rem; display: block; margin-bottom: 8px; animation: trophyBounce 1s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+  @keyframes trophyBounce {
+    0% { transform: scale(0) rotate(-20deg); }
+    60% { transform: scale(1.3) rotate(8deg); }
+    80% { transform: scale(0.9) rotate(-3deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .v-winner-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 12vw, 7rem);
+    color: var(--gold);
+    letter-spacing: 4px; line-height: 1;
+    animation: winnerBlast 1s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+    text-shadow: 0 0 80px rgba(245,200,66,0.8), 0 0 160px rgba(245,200,66,0.4);
+  }
+  @keyframes winnerBlast {
+    0% { opacity: 0; transform: scale(0.3); filter: blur(30px); }
+    50% { opacity: 1; transform: scale(1.15); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .v-winner-sub {
+    font-size: 1rem; color: var(--muted); margin-top: 16px;
+    opacity: 0; animation: fadeInUp 0.5s ease 0.5s forwards;
+  }
+  .v-winner-close {
+    margin-top: 28px; opacity: 0;
+    animation: fadeInUp 0.5s ease 1s forwards;
+  }
+
+  .scanlines {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  }
+
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInScale {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
   /* ─── HEADER ─── */
   header {
     display: flex; align-items: center; justify-content: space-between;
@@ -793,6 +959,14 @@
 
 </div><!-- /main-app -->
 
+<!-- VICTORY SCREEN -->
+<div id="victory-screen">
+  <div class="victory-bg"></div>
+  <div class="scanlines"></div>
+  <div class="victory-particles" id="victory-particles"></div>
+  <div class="victory-content" id="victory-content"></div>
+</div>
+
 <div id="toast"></div>
 
 <!-- FIREBASE SDK -->
@@ -1401,16 +1575,23 @@ window.adminNextRound = async function() {
   const videos = await dbRead('videos') || {};
 
   // Compute winners
+  const duelEntries = Object.entries(duels).sort(([a],[b]) => a.localeCompare(b));
   const winners = [];
-  Object.entries(duels).forEach(([dk, duel]) => {
+  const losers = [];
+  duelEntries.forEach(([dk, duel]) => {
     const duelVotes = votes[dk] || {};
     let vA = 0, vB = 0;
     Object.values(duelVotes).forEach(v => { if(v==='A') vA++; else if(v==='B') vB++; });
-    winners.push(vA >= vB ? duel.vidA : duel.vidB);
+    if (vA >= vB) { winners.push(duel.vidA); losers.push(duel.vidB); }
+    else { winners.push(duel.vidB); losers.push(duel.vidA); }
   });
 
   if (winners.length === 1) {
-    showToast('🏆 ' + (videos[winners[0]]?.name || winners[0]) + ' est le CHAMPION !', 'success');
+    // GRAND FINALE — show epic victory screen
+    const winnerVideo = videos[winners[0]] || { name: winners[0] };
+    const loserVideo = videos[losers[0]] || { name: losers[0] };
+    await dbWrite('champion', winners[0]);
+    showVictoryScreen(winnerVideo.name, loserVideo.name);
     return;
   }
 
@@ -1426,6 +1607,112 @@ window.adminNextRound = async function() {
   renderRoundStats();
   renderDuelsAdmin();
 };
+
+// ─── VICTORY SCREEN ───
+window.showVictoryScreen = function(winnerName, loserName) {
+  const screen = document.getElementById('victory-screen');
+  const content = document.getElementById('victory-content');
+  screen.classList.add('show');
+  content.innerHTML = '';
+  spawnParticles(false);
+
+  // PHASE 1: Suspense countdown
+  let phase = document.createElement('div');
+  phase.className = 'victory-phase visible';
+  phase.innerHTML = `
+    <div class="v-pretitle">Le tournoi est terminé...</div>
+    <div class="v-countdown" id="v-count">3</div>
+    <div class="v-suspense-text">Qui est le champion ?</div>
+  `;
+  content.appendChild(phase);
+
+  let count = 3;
+  const countEl = phase.querySelector('#v-count');
+  const countInterval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      countEl.textContent = count;
+      countEl.style.animation = 'none';
+      void countEl.offsetWidth;
+      countEl.style.animation = 'countPulse 0.5s ease';
+    } else {
+      clearInterval(countInterval);
+      // PHASE 2: announce fake winner (loser) with fanfare
+      setTimeout(() => showPhase2(content, winnerName, loserName), 10000);
+    }
+  }, 900);
+};
+
+function showPhase2(content, winnerName, loserName) {
+  content.innerHTML = `
+    <div class="victory-phase visible">
+      <div class="v-fake-label">🥇 Et le champion est...</div>
+      <div class="v-fake-name">${loserName}</div>
+      <div class="v-fake-sub">Félicitations !</div>
+      <div class="v-confetti-fake">🎉🎊🎉</div>
+    </div>
+  `;
+  spawnParticles(false); // fake red confetti
+  // Wait 10s then twist
+  setTimeout(() => showPhase3(content, winnerName, loserName), 2800);
+}
+
+function showPhase3(content, winnerName, loserName) {
+  content.innerHTML = `
+    <div class="victory-phase visible v-twist-container">
+      <div class="v-twist-line"></div>
+      <div class="v-twist-word">ATTENDEZ !</div>
+      <div class="v-twist-sub">Il y a eu une erreur de décompte...</div>
+      <div class="v-twist-line" style="animation-delay:0.1s"></div>
+    </div>
+  `;
+  // After 2s, show real winner
+  setTimeout(() => showPhase4(content, winnerName), 10000);
+}
+
+function showPhase4(content, winnerName) {
+  content.innerHTML = `
+    <div class="victory-phase visible v-winner-container">
+      <div class="v-winner-pretitle">🏆 Le vrai champion est...</div>
+      <span class="v-trophy">🏆</span>
+      <div class="v-winner-name">${winnerName}</div>
+      <div class="v-winner-sub">La meilleure vidéo de toutes. Indiscutable.</div>
+      <div class="v-winner-close">
+        <button class="btn btn-primary" onclick="closeVictory()">Voir le résultat final</button>
+      </div>
+    </div>
+  `;
+  spawnParticles(true); // golden confetti
+}
+
+window.closeVictory = function() {
+  document.getElementById('victory-screen').classList.remove('show');
+  showPage('bracket');
+};
+
+function spawnParticles(golden) {
+  const container = document.getElementById('victory-particles');
+  container.innerHTML = '';
+  const colors = golden
+    ? ['#f5c842','#e8a020','#fff','#ffd700','#fffacd']
+    : ['#ff4d6d','#ff6b8a','#fff','#ffaaaa'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 10 + 4;
+    p.style.cssText = `
+      left: ${Math.random()*100}%;
+      top: -20px;
+      width: ${size}px;
+      height: ${size * (Math.random() > 0.5 ? 1 : 2.5)}px;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${2 + Math.random()*3}s;
+      animation-delay: ${Math.random()*1.5}s;
+    `;
+    container.appendChild(p);
+  }
+}
 
 window.adminResetRound = async function() {
   const round = (await dbRead('round')) || 1;
