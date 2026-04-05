@@ -1638,7 +1638,7 @@ window.showVictoryScreen = function(winnerName, loserName) {
     } else {
       clearInterval(countInterval);
       // PHASE 2: announce fake winner (loser) with fanfare
-      setTimeout(() => showPhase2(content, winnerName, loserName), 10000);
+      setTimeout(() => showPhase2(content, winnerName, loserName), 400);
     }
   }, 900);
 };
@@ -1653,7 +1653,7 @@ function showPhase2(content, winnerName, loserName) {
     </div>
   `;
   spawnParticles(false); // fake red confetti
-  // Wait 10s then twist
+  // Wait 2.5s then twist
   setTimeout(() => showPhase3(content, winnerName, loserName), 2800);
 }
 
@@ -1667,7 +1667,7 @@ function showPhase3(content, winnerName, loserName) {
     </div>
   `;
   // After 2s, show real winner
-  setTimeout(() => showPhase4(content, winnerName), 10000);
+  setTimeout(() => showPhase4(content, winnerName), 2200);
 }
 
 function showPhase4(content, winnerName) {
